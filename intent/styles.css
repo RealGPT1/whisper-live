@@ -160,7 +160,7 @@ body { background: var(--bg-color); min-height: 100vh; color: var(--text-color);
 
 /* Commands scroll area */
 .commands-scroll {
-  max-height: 50vh;
+  max-height: 65vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
