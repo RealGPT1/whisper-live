@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Whisper Live</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container py-3">
+
+    <!-- Header -->
+    <div class="app-header mb-3">
+      <div>
+        <h1 class="app-title">
+          <i class="bi bi-mic-fill text-primary"></i>
+          <span>Whisper Live</span>
+        </h1>
+        <div class="app-status" id="status">Idle</div>
+      </div>
+      <button class="btn btn-success" id="toggleBtn" disabled>
+        <i class="bi bi-play-fill" id="toggleIcon"></i><span class="d-none d-sm-inline ms-1" id="toggleLabel">Start</span>
+      </button>
+    </div>
+
+    <!-- Audio Level Panel with State Indicators -->
+    <div class="card mb-3">
+      <div class="card-body py-3">
+        <div class="audio-panel">
+          <div class="audio-meter-wrap">
+            <div class="audio-meter" id="audioMeter">
+              <div class="level" id="levelBar"></div>
+              <div class="threshold-marker" id="thresholdMarker"></div>
+            </div>
+          </div>
+          <div class="state-indicators">
+            <div class="state-dot speaking" id="stateSpeaking" title="Speaking">
+              <i class="bi bi-mic-fill"></i>
+            </div>
+            <div class="state-dot processing" id="stateProcessing" title="Processing">
+              <i class="bi bi-lightning-fill"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Commands -->
+    <div class="card">
+      <div class="card-header bg-white border-0 py-2">
+        <h6 class="mb-0 small text-muted">
+          <i class="bi bi-terminal me-1"></i>Commands
+        </h6>
+      </div>
+      <div class="card-body pt-0">
+        <div class="commands-scroll" id="commands">
+          <div class="empty-state">
+            <i class="bi bi-chat-dots d-block mb-2" style="font-size:3rem;"></i>
+            <p class="mb-0 small">Speak a command to get started</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Floating dark mode toggle -->
+  <button class="fab-theme" id="darkModeBtn" title="Toggle dark mode">
+    <i class="bi bi-moon-fill" id="darkModeIcon"></i>
+  </button>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
