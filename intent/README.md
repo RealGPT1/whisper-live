@@ -1,6 +1,6 @@
-# Whisper Live
+# Whisper Live - intent
 
-Browser-based voice command transcription using Whisper AI. Runs entirely in the browser with no server required.
+Browser-based voice intent transcription using Whisper AI. Runs entirely in the browser with no server required.
 
 ## Features
 
