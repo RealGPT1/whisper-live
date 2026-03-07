@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Whisper Live</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #000;
+      color: #e9ecef;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* GitHub corner */
+    .github-link {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #adb5bd;
+      padding: 0.4rem 0.75rem;
+      border-radius: 20px;
+      border: 1px solid #2a2a2a;
+      background: #111;
+      transition: color 0.15s, border-color 0.15s;
+      z-index: 100;
+    }
+    .github-link:hover { color: #fff; border-color: #444; }
+    .github-link i { font-size: 1rem; }
+
+    /* Hero */
+    .hero {
+      padding: 6rem 1rem 3rem;
+      text-align: center;
+    }
+    .hero-icon {
+      font-size: 3.5rem;
+      color: #4d9fff;
+      display: block;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+      font-size: 2.75rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+    .hero p {
+      font-size: 1.05rem;
+      color: #6c757d;
+      max-width: 480px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.6;
+    }
+    .badges {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 3.5rem;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      background: #111;
+      color: #6c757d;
+      border: 1px solid #222;
+    }
+
+    /* App cards */
+    .app-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 1.25rem 4rem;
+    }
+    .app-card {
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-radius: 16px;
+      padding: 1.75rem;
+      color: #e9ecef;
+      transition: border-color 0.15s ease, background 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .app-card:hover {
+      border-color: #333;
+      background: #111;
+      color: #e9ecef;
+    }
+    .app-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      color: white;
+    }
+    .icon-dictate { background: linear-gradient(135deg, #0d6efd, #6610f2); }
+    .icon-intent  { background: linear-gradient(135deg, #198754, #20c997); }
+    .app-card h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+    }
+    .app-card p {
+      font-size: 0.875rem;
+      color: #6c757d;
+      margin: 0;
+      line-height: 1.55;
+    }
+    .app-card-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #4d9fff;
+      margin-top: auto;
+    }
+
+    /* How it works */
+    .how-it-works {
+      background: #080808;
+      border-top: 1px solid #1a1a1a;
+      padding: 3.5rem 1.25rem;
+    }
+    .how-it-works h3 {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      color: #adb5bd;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.78rem;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 2rem;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .feature {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .feature i {
+      font-size: 1.3rem;
+      color: #4d9fff;
+    }
+    .feature h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 0;
+    }
+    .feature p {
+      font-size: 0.82rem;
+      color: #6c757d;
+      margin: 0;
+      line-height: 1.55;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: #444;
+      border-top: 1px solid #1a1a1a;
+    }
+    footer a { color: #555; }
+    footer a:hover { color: #aaa; }
+
+    @media (max-width: 576px) {
+      .hero h1 { font-size: 2rem; }
+      .hero { padding: 4rem 1rem 2rem; }
+      .github-link span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <a class="github-link" href="https://github.com/RealGPT1/whisper-live" target="_blank" rel="noopener">
+    <i class="bi bi-github"></i>
+    <span>GitHub</span>
+  </a>
+
+  <div class="hero">
+    <i class="bi bi-mic-fill hero-icon"></i>
+    <h1>Whisper Live</h1>
+    <p>Real-time speech transcription in the browser. No server, no API key, fully private.</p>
+    <div class="badges">
+      <span class="badge-pill"><i class="bi bi-cpu"></i> WebGPU / WASM</span>
+      <span class="badge-pill"><i class="bi bi-lock-fill"></i> Runs locally</span>
+      <span class="badge-pill"><i class="bi bi-lightning-fill"></i> Whisper tiny.en</span>
+      <span class="badge-pill"><i class="bi bi-palette"></i> Dark only</span>
+    </div>
+  </div>
+
+  <div class="app-cards">
+
+    <a class="app-card" href="dictate/">
+      <div class="app-card-icon icon-dictate">
+        <i class="bi bi-card-text"></i>
+      </div>
+      <div>
+        <h2>Dictate</h2>
+        <p>Pure speech-to-text. Each utterance becomes a card with a one-click copy button.</p>
+      </div>
+      <div class="app-card-footer">
+        Open Dictate <i class="bi bi-arrow-right"></i>
+      </div>
+    </a>
+
+    <a class="app-card" href="intent/">
+      <div class="app-card-icon icon-intent">
+        <i class="bi bi-terminal"></i>
+      </div>
+      <div>
+        <h2>Intent</h2>
+        <p>Transcribes speech and classifies it as search, navigate, question, or other.</p>
+      </div>
+      <div class="app-card-footer">
+        Open Intent <i class="bi bi-arrow-right"></i>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="how-it-works">
+    <h3>How it works</h3>
+    <div class="features">
+      <div class="feature">
+        <i class="bi bi-mic"></i>
+        <h4>Voice activity detection</h4>
+        <p>RMS energy threshold with a draggable marker to tune mic sensitivity.</p>
+      </div>
+      <div class="feature">
+        <i class="bi bi-gpu-card"></i>
+        <h4>WebGPU acceleration</h4>
+        <p>Uses the GPU when available, falls back to WASM automatically.</p>
+      </div>
+      <div class="feature">
+        <i class="bi bi-person-lock"></i>
+        <h4>Fully private</h4>
+        <p>Audio never leaves your device. Model is cached after first download.</p>
+      </div>
+      <div class="feature">
+        <i class="bi bi-keyboard"></i>
+        <h4>Keyboard shortcuts</h4>
+        <p>Space to start/stop. R to force-transcribe the current buffer.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Powered by <a href="https://github.com/xenova/transformers.js" target="_blank" rel="noopener">Transformers.js</a>
+    &amp; <a href="https://github.com/openai/whisper" target="_blank" rel="noopener">Whisper</a>
+  </footer>
+
+</body>
+</html>
