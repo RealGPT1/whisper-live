@@ -83,11 +83,25 @@ export async function transcribeAudioFile(file, worker, onStatus) {
 
   const resampled = resampleToTarget(mono, audioBuffer.sampleRate, SAMPLE_RATE);
 
-  onStatus?.('Transcribing…');
+  const durationSec = resampled.length / SAMPLE_RATE;
+  const durationLabel = durationSec >= 60
+    ? `${Math.floor(durationSec / 60)}m ${Math.round(durationSec % 60)}s`
+    : `${Math.round(durationSec)}s`;
+  onStatus?.(`Transcribing ${durationLabel} of audio…`);
+
   const id = ++idCounter;
+
+  // Use long-form chunked transcription so the full file is covered.
+  // Without chunk_length_s + return_timestamps Whisper silently truncates
+  // anything beyond its 30-second context window.
+  const options = {
+    chunk_length_s: 30,
+    stride_length_s: 5,
+    return_timestamps: true,  // required to enable the chunked pipeline
+  };
 
   return new Promise((resolve, reject) => {
     pending.set(id, { resolve, reject });
-    worker.postMessage({ type: 'transcribe', audioData: resampled, id });
+    worker.postMessage({ type: 'transcribe', audioData: resampled, id, options });
   });
 }
