@@ -15,6 +15,7 @@ const toggleLabel = document.getElementById('toggleLabel');
 const statusEl = document.getElementById('status');
 const darkModeBtn = document.getElementById('darkModeBtn');
 const darkModeIcon = document.getElementById('darkModeIcon');
+const titleMicIcon = document.getElementById('titleMicIcon');
 
 // Dark mode
 function setDarkMode(enabled) {
@@ -86,6 +87,21 @@ let talking = false;
 let hasDictations = false;
 let transcriptionId = 0;
 let pendingTranscriptions = 0;
+
+// Track whether user has manually scrolled away from bottom
+let userScrolledAway = false;
+
+dictationsEl.addEventListener('scroll', () => {
+  const { scrollTop, scrollHeight, clientHeight } = dictationsEl;
+  const distFromBottom = scrollHeight - scrollTop - clientHeight;
+  userScrolledAway = distFromBottom > 20;
+});
+
+function scrollToBottom() {
+  if (!userScrolledAway) {
+    dictationsEl.scrollTop = dictationsEl.scrollHeight;
+  }
+}
 
 // Worker for background transcription
 let worker = null;
@@ -179,6 +195,16 @@ function resampleToTarget(input, inRate, outRate) {
 
 function status(txt) { statusEl.textContent = txt; }
 
+function setMicIconListening(isListening) {
+  if (isListening) {
+    titleMicIcon.classList.remove('bi-mic-mute-fill');
+    titleMicIcon.classList.add('bi-mic-fill');
+  } else {
+    titleMicIcon.classList.remove('bi-mic-fill');
+    titleMicIcon.classList.add('bi-mic-mute-fill');
+  }
+}
+
 function updateToggleButton() {
   if (running) {
     toggleBtn.classList.remove('btn-success');
@@ -186,12 +212,14 @@ function updateToggleButton() {
     toggleIcon.classList.remove('bi-play-fill');
     toggleIcon.classList.add('bi-stop-fill');
     toggleLabel.textContent = 'Stop';
+    setMicIconListening(true);
   } else {
     toggleBtn.classList.remove('btn-danger');
     toggleBtn.classList.add('btn-success');
     toggleIcon.classList.remove('bi-stop-fill');
     toggleIcon.classList.add('bi-play-fill');
     toggleLabel.textContent = 'Start';
+    setMicIconListening(false);
   }
 }
 
@@ -298,16 +326,16 @@ function addDictation(txt) {
   }
 
   const el = document.createElement('div');
-  el.className = 'dictation-card';
+  el.className = 'dictation-item';
+  el.dataset.text = txt;
 
   el.innerHTML = `
+    <div class="dictation-text">${txt}</div>
     <button class="copy-btn" title="Copy to clipboard"><i class="bi bi-copy"></i></button>
-    <div class="dictation-text">
-      <i class="bi bi-quote text-muted me-1"></i>${txt}
-    </div>
   `;
 
-  el.querySelector('.copy-btn').addEventListener('click', () => {
+  el.querySelector('.copy-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
     navigator.clipboard.writeText(txt).then(() => {
       const icon = el.querySelector('.copy-btn i');
       icon.classList.replace('bi-copy', 'bi-check2');
@@ -315,8 +343,32 @@ function addDictation(txt) {
     });
   });
 
-  dictationsEl.prepend(el);
+  dictationsEl.appendChild(el);
+  scrollToBottom();
   log('transcribed:', txt);
+}
+
+function getAllTranscriptText() {
+  return [...dictationsEl.querySelectorAll('.dictation-item')]
+    .map(el => el.dataset.text || el.querySelector('.dictation-text').textContent.trim())
+    .join('\n');
+}
+
+function clearTranscript() {
+  hasDictations = false;
+  userScrolledAway = false;
+  dictationsEl.innerHTML = `
+    <div class="empty-state">
+      <i class="bi bi-mic d-block mb-2" style="font-size:3rem;"></i>
+      <p class="mb-0 small">Speak to start transcribing</p>
+    </div>
+  `;
+}
+
+function generateDefaultFilename() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `transcript-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}-${pad(now.getMinutes())}.txt`;
 }
 
 async function stopCapture() {
@@ -368,6 +420,59 @@ window.addEventListener('keydown', (e) => {
     worker.postMessage({ type: 'transcribe', audioData: resampled, id });
     updateProcessingState();
   }
+});
+
+// Copy-all button
+const copyAllBtn = document.getElementById('copyAllBtn');
+const copyAllIcon = document.getElementById('copyAllIcon');
+
+copyAllBtn.addEventListener('click', () => {
+  if (!hasDictations) return;
+  const text = getAllTranscriptText();
+  navigator.clipboard.writeText(text).then(() => {
+    copyAllIcon.classList.replace('bi-clipboard', 'bi-check2');
+    setTimeout(() => copyAllIcon.classList.replace('bi-check2', 'bi-clipboard'), 1500);
+  });
+});
+
+// Title click modal
+const appTitle = document.getElementById('appTitle');
+const titleModalEl = document.getElementById('titleModal');
+const titleModal = new bootstrap.Modal(titleModalEl);
+const saveFilenameInput = document.getElementById('saveFilename');
+
+appTitle.addEventListener('click', () => {
+  saveFilenameInput.value = generateDefaultFilename();
+  titleModal.show();
+});
+
+document.getElementById('modalCopyBtn').addEventListener('click', () => {
+  const text = getAllTranscriptText();
+  if (!text) { titleModal.hide(); return; }
+  navigator.clipboard.writeText(text).then(() => {
+    titleModal.hide();
+  });
+});
+
+document.getElementById('modalSaveBtn').addEventListener('click', () => {
+  const text = getAllTranscriptText();
+  if (!text) { titleModal.hide(); return; }
+  const filename = saveFilenameInput.value.trim() || generateDefaultFilename();
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  titleModal.hide();
+});
+
+document.getElementById('modalNewBtn').addEventListener('click', () => {
+  clearTranscript();
+  titleModal.hide();
 });
 
 // Preload model on init
