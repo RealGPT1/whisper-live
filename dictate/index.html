@@ -15,7 +15,7 @@
     <div class="app-header mb-3">
       <div>
         <h1 class="app-title" id="appTitle" title="Click for transcript options">
-          <span>Whisper Live Dictate</span>
+          <i class="bi bi-list me-1" id="hamburgerIcon"></i><span>Whisper Live Dictate</span>
           <i class="bi bi-mic-mute-fill text-primary" id="titleMicIcon"></i>
         </h1>
         <div class="app-status" id="status">Idle</div>
@@ -105,6 +105,34 @@
               <i class="bi bi-arrow-counterclockwise me-2"></i>Start new transcript
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transcript Item Edit Modal -->
+  <div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-1">
+          <h5 class="modal-title" id="itemModalLabel">
+            <i class="bi bi-pencil-square text-primary me-2"></i>Edit Transcript
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <textarea class="form-control" id="itemModalText" rows="6" style="resize:vertical;"></textarea>
+        </div>
+        <div class="modal-footer border-0 pt-1">
+          <button class="btn btn-outline-secondary" id="itemModalCancelBtn">
+            <i class="bi bi-x-lg me-1"></i>Cancel
+          </button>
+          <button class="btn btn-outline-primary" id="itemModalCopyBtn">
+            <i class="bi bi-clipboard me-1" id="itemModalCopyIcon"></i>Copy
+          </button>
+          <button class="btn btn-primary" id="itemModalUpdateBtn">
+            <i class="bi bi-check-lg me-1"></i>Update
+          </button>
         </div>
       </div>
     </div>

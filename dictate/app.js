@@ -328,20 +328,11 @@ function addDictation(txt) {
   const el = document.createElement('div');
   el.className = 'dictation-item';
   el.dataset.text = txt;
+  el.title = 'Click to edit';
 
-  el.innerHTML = `
-    <div class="dictation-text">${txt}</div>
-    <button class="copy-btn" title="Copy to clipboard"><i class="bi bi-copy"></i></button>
-  `;
+  el.innerHTML = `<div class="dictation-text">${txt}</div>`;
 
-  el.querySelector('.copy-btn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(txt).then(() => {
-      const icon = el.querySelector('.copy-btn i');
-      icon.classList.replace('bi-copy', 'bi-check2');
-      setTimeout(() => icon.classList.replace('bi-check2', 'bi-copy'), 1500);
-    });
-  });
+  el.addEventListener('click', () => openItemModal(el));
 
   dictationsEl.appendChild(el);
   scrollToBottom();
@@ -368,7 +359,7 @@ function clearTranscript() {
 function generateDefaultFilename() {
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
-  return `transcript-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}-${pad(now.getMinutes())}.txt`;
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.txt`;
 }
 
 async function stopCapture() {
@@ -473,6 +464,39 @@ document.getElementById('modalSaveBtn').addEventListener('click', () => {
 document.getElementById('modalNewBtn').addEventListener('click', () => {
   clearTranscript();
   titleModal.hide();
+});
+
+// Transcript item edit modal
+const itemModalEl = document.getElementById('itemModal');
+const itemModal = new bootstrap.Modal(itemModalEl);
+const itemModalText = document.getElementById('itemModalText');
+const itemModalCopyIcon = document.getElementById('itemModalCopyIcon');
+let currentEditItem = null;
+
+function openItemModal(el) {
+  currentEditItem = el;
+  itemModalText.value = el.dataset.text || el.querySelector('.dictation-text').textContent.trim();
+  itemModal.show();
+}
+
+document.getElementById('itemModalUpdateBtn').addEventListener('click', () => {
+  if (currentEditItem) {
+    const newText = itemModalText.value;
+    currentEditItem.dataset.text = newText;
+    currentEditItem.querySelector('.dictation-text').textContent = newText;
+  }
+  itemModal.hide();
+});
+
+document.getElementById('itemModalCopyBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(itemModalText.value).then(() => {
+    itemModalCopyIcon.classList.replace('bi-clipboard', 'bi-check2');
+    setTimeout(() => itemModalCopyIcon.classList.replace('bi-check2', 'bi-clipboard'), 1500);
+  });
+});
+
+document.getElementById('itemModalCancelBtn').addEventListener('click', () => {
+  itemModal.hide();
 });
 
 // Preload model on init

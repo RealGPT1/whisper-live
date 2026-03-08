@@ -79,48 +79,23 @@ body { background: var(--bg-color); min-height: 100vh; color: var(--text-color);
 .state-dot.processing.active { animation: pulse 1s infinite; }
 @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
 
-/* Dictation items - continuous script style */
+/* Dictation items - continuous script style, clickable */
 .dictation-item {
   position: relative;
-  padding: 0.15rem 2rem 0.15rem 0;
+  padding: 0.15rem 0.5rem;
   margin-bottom: 0.35rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.dictation-item:hover {
+  background: rgba(128, 128, 128, 0.1);
 }
 .dictation-text {
   font-size: 1rem;
   color: var(--text-color);
   word-break: break-word;
   line-height: 1.6;
-}
-
-/* Per-item copy button */
-.copy-btn {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0.2rem 0.25rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  line-height: 1;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s, background 0.15s;
-}
-.dictation-item:hover .copy-btn {
-  opacity: 1;
-}
-.copy-btn:hover {
-  color: var(--text-color);
-  background: rgba(128, 128, 128, 0.12);
-}
-.copy-btn .bi-check2 { color: #198754; }
-
-/* Always show copy btn on touch devices */
-@media (hover: none) {
-  .copy-btn { opacity: 0.5; }
 }
 
 /* Copy-all button in transcription header */
@@ -167,6 +142,10 @@ body { background: var(--bg-color); min-height: 100vh; color: var(--text-color);
 }
 .app-title:hover {
   opacity: 0.85;
+}
+.app-title #hamburgerIcon {
+  font-size: 1.4rem;
+  line-height: 1;
 }
 .app-title #titleMicIcon {
   transition: all 0.2s ease;
@@ -253,4 +232,12 @@ body { background: var(--bg-color); min-height: 100vh; color: var(--text-color);
 }
 [data-theme="dark"] .form-control::placeholder {
   color: var(--text-muted);
+}
+[data-theme="dark"] textarea.form-control {
+  background: #0f3460;
+  border-color: rgba(255,255,255,0.15);
+  color: var(--text-color);
+}
+[data-theme="dark"] .modal-footer {
+  border-color: rgba(255,255,255,0.1);
 }
