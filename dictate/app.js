@@ -1,3 +1,5 @@
+import { transcribeAudioFile, handleWorkerMessage as handleFileWorkerMessage } from './audio-file-transcriber.js';
+
 // ----- CONFIG -----
 const SILENCE_MS = 800;
 const MIN_SPEECH_MS = 300;
@@ -115,6 +117,9 @@ function initWorker() {
   modelReady = false;
 
   worker.onmessage = (e) => {
+    // Let the file transcriber intercept messages that belong to it
+    if (handleFileWorkerMessage(e.data)) return;
+
     const { type, text, id, duration, took, progress, error } = e.data;
 
     if (type === 'progress') {
@@ -319,7 +324,32 @@ function flattenFloat32Array(chunks) {
   return out;
 }
 
-function addDictation(txt) {
+// ----- Settings: save transcripts to local storage -----
+let saveTranscriptsEnabled = localStorage.getItem('saveTranscripts') === '1';
+
+function saveTranscriptsToStorage() {
+  if (!saveTranscriptsEnabled) return;
+  const texts = [...dictationsEl.querySelectorAll('.dictation-item')]
+    .map(el => el.dataset.text || el.querySelector('.dictation-text').textContent.trim());
+  localStorage.setItem('savedTranscript', JSON.stringify(texts));
+}
+
+function restoreTranscriptsFromStorage() {
+  if (!saveTranscriptsEnabled) return;
+  const saved = localStorage.getItem('savedTranscript');
+  if (!saved) return;
+  try {
+    const texts = JSON.parse(saved);
+    if (texts.length > 0) {
+      texts.forEach(t => addDictation(t, false));
+    }
+  } catch (e) {
+    log('failed to restore transcripts:', e);
+  }
+}
+// -------------------------------------------------------
+
+function addDictation(txt, doSave = true) {
   if (!hasDictations) {
     dictationsEl.innerHTML = '';
     hasDictations = true;
@@ -337,6 +367,8 @@ function addDictation(txt) {
   dictationsEl.appendChild(el);
   scrollToBottom();
   log('transcribed:', txt);
+
+  if (doSave) saveTranscriptsToStorage();
 }
 
 function getAllTranscriptText() {
@@ -354,6 +386,7 @@ function clearTranscript() {
       <p class="mb-0 small">Speak to start transcribing</p>
     </div>
   `;
+  localStorage.removeItem('savedTranscript');
 }
 
 function generateDefaultFilename() {
@@ -413,26 +446,13 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Copy-all button
+// ----- Transcript Options Modal (clipboard icon) -----
 const copyAllBtn = document.getElementById('copyAllBtn');
-const copyAllIcon = document.getElementById('copyAllIcon');
-
-copyAllBtn.addEventListener('click', () => {
-  if (!hasDictations) return;
-  const text = getAllTranscriptText();
-  navigator.clipboard.writeText(text).then(() => {
-    copyAllIcon.classList.replace('bi-clipboard', 'bi-check2');
-    setTimeout(() => copyAllIcon.classList.replace('bi-check2', 'bi-clipboard'), 1500);
-  });
-});
-
-// Title click modal
-const appTitle = document.getElementById('appTitle');
 const titleModalEl = document.getElementById('titleModal');
 const titleModal = new bootstrap.Modal(titleModalEl);
 const saveFilenameInput = document.getElementById('saveFilename');
 
-appTitle.addEventListener('click', () => {
+copyAllBtn.addEventListener('click', () => {
   saveFilenameInput.value = generateDefaultFilename();
   titleModal.show();
 });
@@ -466,7 +486,7 @@ document.getElementById('modalNewBtn').addEventListener('click', () => {
   titleModal.hide();
 });
 
-// Transcript item edit modal
+// ----- Transcript Item Edit Modal -----
 const itemModalEl = document.getElementById('itemModal');
 const itemModal = new bootstrap.Modal(itemModalEl);
 const itemModalText = document.getElementById('itemModalText');
@@ -484,6 +504,7 @@ document.getElementById('itemModalUpdateBtn').addEventListener('click', () => {
     const newText = itemModalText.value;
     currentEditItem.dataset.text = newText;
     currentEditItem.querySelector('.dictation-text').textContent = newText;
+    saveTranscriptsToStorage();
   }
   itemModal.hide();
 });
@@ -498,6 +519,96 @@ document.getElementById('itemModalCopyBtn').addEventListener('click', () => {
 document.getElementById('itemModalCancelBtn').addEventListener('click', () => {
   itemModal.hide();
 });
+
+// ----- Settings Modal -----
+const settingsModalEl = document.getElementById('settingsModal');
+const settingsModal = new bootstrap.Modal(settingsModalEl);
+const saveToLocalStorageToggle = document.getElementById('saveToLocalStorageToggle');
+
+saveToLocalStorageToggle.checked = saveTranscriptsEnabled;
+
+saveToLocalStorageToggle.addEventListener('change', () => {
+  saveTranscriptsEnabled = saveToLocalStorageToggle.checked;
+  localStorage.setItem('saveTranscripts', saveTranscriptsEnabled ? '1' : '0');
+  if (saveTranscriptsEnabled) {
+    saveTranscriptsToStorage();
+  } else {
+    localStorage.removeItem('savedTranscript');
+  }
+});
+
+document.getElementById('menuSettings').addEventListener('click', () => {
+  settingsModal.show();
+});
+
+// ----- About Modal -----
+const aboutModalEl = document.getElementById('aboutModal');
+const aboutModal = new bootstrap.Modal(aboutModalEl);
+
+document.getElementById('menuAbout').addEventListener('click', () => {
+  aboutModal.show();
+});
+
+// ----- Import Audio Modal -----
+const importAudioModalEl = document.getElementById('importAudioModal');
+const importAudioModal = new bootstrap.Modal(importAudioModalEl);
+const audioFileInput = document.getElementById('audioFileInput');
+const transcribeFileBtn = document.getElementById('transcribeFileBtn');
+const importAudioStatus = document.getElementById('importAudioStatus');
+
+document.getElementById('menuImportAudio').addEventListener('click', () => {
+  audioFileInput.value = '';
+  transcribeFileBtn.disabled = true;
+  importAudioStatus.textContent = '';
+  importAudioModal.show();
+});
+
+audioFileInput.addEventListener('change', () => {
+  transcribeFileBtn.disabled = !audioFileInput.files.length;
+  if (audioFileInput.files.length) {
+    importAudioStatus.textContent = `Selected: ${audioFileInput.files[0].name}`;
+  }
+});
+
+transcribeFileBtn.addEventListener('click', async () => {
+  const file = audioFileInput.files[0];
+  if (!file) return;
+
+  if (!modelReady) {
+    importAudioStatus.textContent = 'Please wait for the model to finish loading…';
+    return;
+  }
+
+  transcribeFileBtn.disabled = true;
+
+  try {
+    const text = await transcribeAudioFile(file, worker, (msg) => {
+      importAudioStatus.textContent = msg;
+    });
+
+    if (text) {
+      const isNoise = /^\[.*\]$|^\(.*\)$|^\{.*\}$|^\*.*\*$/i.test(text);
+      if (!isNoise) {
+        addDictation(text);
+        importAudioStatus.textContent = 'Transcription complete!';
+        setTimeout(() => importAudioModal.hide(), 900);
+      } else {
+        importAudioStatus.textContent = 'No speech detected in file.';
+        transcribeFileBtn.disabled = false;
+      }
+    } else {
+      importAudioStatus.textContent = 'No speech detected in file.';
+      transcribeFileBtn.disabled = false;
+    }
+  } catch (err) {
+    log('file transcription error:', err);
+    importAudioStatus.textContent = `Error: ${err.message}`;
+    transcribeFileBtn.disabled = false;
+  }
+});
+
+// Restore saved transcripts on load (before model starts, DOM is ready)
+restoreTranscriptsFromStorage();
 
 // Preload model on init
 initWorker();

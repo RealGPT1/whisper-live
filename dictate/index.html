@@ -14,11 +14,35 @@
     <!-- Header -->
     <div class="app-header mb-3">
       <div>
-        <h1 class="app-title" id="appTitle" title="Click for transcript options">
-          <i class="bi bi-list me-1" id="hamburgerIcon"></i><span>Whisper Live Dictate</span>
-          <i class="bi bi-mic-mute-fill text-primary" id="titleMicIcon"></i>
+        <h1 class="app-title" id="appTitle">
+          <div class="dropdown">
+            <button class="hamburger-btn" id="hamburgerBtn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu">
+              <i class="bi bi-list"></i>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="hamburgerBtn">
+              <li>
+                <button class="dropdown-item" id="menuImportAudio">
+                  <i class="bi bi-music-note-beamed me-2"></i>Import Audio
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item" id="menuSettings">
+                  <i class="bi bi-gear me-2"></i>Settings
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item" id="menuAbout">
+                  <i class="bi bi-info-circle me-2"></i>About
+                </button>
+              </li>
+            </ul>
+          </div>
+          <span>Whisper Live Dictate</span>
         </h1>
-        <div class="app-status" id="status">Idle</div>
+        <div class="app-status-row">
+          <i class="bi bi-mic-mute-fill text-primary" id="titleMicIcon"></i>
+          <div class="app-status" id="status">Idle</div>
+        </div>
       </div>
       <button class="btn btn-success" id="toggleBtn" disabled>
         <i class="bi bi-play-fill" id="toggleIcon"></i><span class="d-none d-sm-inline ms-1" id="toggleLabel">Start</span>
@@ -54,7 +78,7 @@
           <h6 class="mb-0 small text-muted">
             <i class="bi bi-card-text me-1"></i>Transcription
           </h6>
-          <button class="copy-all-btn" id="copyAllBtn" title="Copy all to clipboard">
+          <button class="copy-all-btn" id="copyAllBtn" title="Transcript options">
             <i class="bi bi-clipboard" id="copyAllIcon"></i>
           </button>
         </div>
@@ -76,13 +100,13 @@
     <i class="bi bi-moon-fill" id="darkModeIcon"></i>
   </button>
 
-  <!-- Title Options Modal -->
+  <!-- Transcript Options Modal -->
   <div class="modal fade" id="titleModal" tabindex="-1" aria-labelledby="titleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header border-0 pb-1">
           <h5 class="modal-title" id="titleModalLabel">
-            <i class="bi bi-mic-fill text-primary me-2"></i>Whisper Live Dictate
+            <i class="bi bi-clipboard text-primary me-2"></i>Transcript Options
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -133,6 +157,106 @@
           <button class="btn btn-primary" id="itemModalUpdateBtn">
             <i class="bi bi-check-lg me-1"></i>Update
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-1">
+          <h5 class="modal-title" id="settingsModalLabel">
+            <i class="bi bi-gear text-primary me-2"></i>Settings
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <div class="settings-section">
+            <div class="settings-section-title">Transcript Storage</div>
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" role="switch" id="saveToLocalStorageToggle">
+              <label class="form-check-label" for="saveToLocalStorageToggle">
+                Save transcripts to local storage
+              </label>
+            </div>
+            <p class="text-muted small mb-0">When enabled, transcripts are automatically saved to your browser's local storage and restored when you reopen the app.</p>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-1">
+          <button class="btn btn-primary" data-bs-dismiss="modal">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Audio Modal -->
+  <div class="modal fade" id="importAudioModal" tabindex="-1" aria-labelledby="importAudioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-1">
+          <h5 class="modal-title" id="importAudioModalLabel">
+            <i class="bi bi-music-note-beamed text-primary me-2"></i>Import Audio
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <div class="mb-3">
+            <label for="audioFileInput" class="form-label small text-muted">Select an audio file to transcribe</label>
+            <input class="form-control" type="file" id="audioFileInput"
+              accept=".wav,.mp3,.mp4,.m4a,.ogg,.webm,.flac,.aac">
+            <div class="form-text">Supported: WAV, MP3, MP4, M4A, OGG, WebM, FLAC, AAC</div>
+          </div>
+          <div id="importAudioStatus" class="small text-muted" style="min-height:1.2em;"></div>
+        </div>
+        <div class="modal-footer border-0 pt-1">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" id="transcribeFileBtn" disabled>
+            <i class="bi bi-lightning-fill me-1"></i>Transcribe
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-1">
+          <h5 class="modal-title" id="aboutModalLabel">
+            <i class="bi bi-mic-fill text-primary me-2"></i>Whisper Live Dictate
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <p class="mb-2">Real-time speech transcription that runs entirely in your browser — no servers, no uploads, complete privacy.</p>
+          <h6 class="mt-3 mb-2">How it works</h6>
+          <ul class="small text-muted ps-3 mb-3">
+            <li class="mb-1">Uses OpenAI's Whisper model via <strong>Transformers.js</strong></li>
+            <li class="mb-1">Runs on <strong>WebGPU</strong> for fast inference, falling back to WASM</li>
+            <li class="mb-1">Voice activity detection automatically detects speech pauses</li>
+            <li class="mb-1">Drag the red marker on the audio meter to set the silence threshold</li>
+          </ul>
+          <h6 class="mb-2">Features</h6>
+          <ul class="small text-muted ps-3 mb-3">
+            <li class="mb-1">Click any transcript item to edit it</li>
+            <li class="mb-1">Import audio files (WAV, MP3, etc.) for offline transcription</li>
+            <li class="mb-1">Save transcripts to local storage for persistence across sessions</li>
+          </ul>
+          <h6 class="mb-2">Keyboard shortcuts</h6>
+          <div class="about-shortcuts small text-muted">
+            <div class="d-flex align-items-center gap-3 mb-1">
+              <kbd>Space</kbd><span>Start / Stop recording</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+              <kbd>R</kbd><span>Force transcribe current audio buffer</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-1">
+          <button class="btn btn-primary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
