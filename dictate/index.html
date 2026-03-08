@@ -14,9 +14,9 @@
     <!-- Header -->
     <div class="app-header mb-3">
       <div>
-        <h1 class="app-title">
-          <i class="bi bi-mic-fill text-primary"></i>
+        <h1 class="app-title" id="appTitle" title="Click for transcript options">
           <span>Whisper Live Dictate</span>
+          <i class="bi bi-mic-mute-fill text-primary" id="titleMicIcon"></i>
         </h1>
         <div class="app-status" id="status">Idle</div>
       </div>
@@ -47,12 +47,17 @@
       </div>
     </div>
 
-    <!-- Transcriptions -->
+    <!-- Transcription -->
     <div class="card">
-      <div class="card-header bg-white border-0 py-2">
-        <h6 class="mb-0 small text-muted">
-          <i class="bi bi-card-text me-1"></i>Transcriptions
-        </h6>
+      <div class="card-header border-0 py-2">
+        <div class="d-flex align-items-center justify-content-between">
+          <h6 class="mb-0 small text-muted">
+            <i class="bi bi-card-text me-1"></i>Transcription
+          </h6>
+          <button class="copy-all-btn" id="copyAllBtn" title="Copy all to clipboard">
+            <i class="bi bi-clipboard" id="copyAllIcon"></i>
+          </button>
+        </div>
       </div>
       <div class="card-body pt-0">
         <div class="dictations-scroll" id="dictations">
@@ -71,6 +76,41 @@
     <i class="bi bi-moon-fill" id="darkModeIcon"></i>
   </button>
 
+  <!-- Title Options Modal -->
+  <div class="modal fade" id="titleModal" tabindex="-1" aria-labelledby="titleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-1">
+          <h5 class="modal-title" id="titleModalLabel">
+            <i class="bi bi-mic-fill text-primary me-2"></i>Whisper Live Dictate
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <p class="text-muted small mb-3">What would you like to do with your transcript?</p>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary modal-action-btn" id="modalCopyBtn">
+              <i class="bi bi-clipboard me-2"></i>Copy transcript to clipboard
+            </button>
+            <div class="save-file-group">
+              <div class="input-group input-group-sm mb-1">
+                <span class="input-group-text"><i class="bi bi-file-text"></i></span>
+                <input type="text" class="form-control" id="saveFilename" placeholder="filename.txt">
+              </div>
+              <button class="btn btn-outline-secondary modal-action-btn w-100" id="modalSaveBtn">
+                <i class="bi bi-download me-2"></i>Save as text file
+              </button>
+            </div>
+            <button class="btn btn-outline-danger modal-action-btn" id="modalNewBtn">
+              <i class="bi bi-arrow-counterclockwise me-2"></i>Start new transcript
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>
