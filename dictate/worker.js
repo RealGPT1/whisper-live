@@ -46,7 +46,7 @@ async function loadModel() {
   }
 }
 
-async function transcribe(audioData, id) {
+async function transcribe(audioData, id, options = {}) {
   if (!model) {
     self.postMessage({ type: 'error', error: 'Model not loaded' });
     return;
@@ -57,7 +57,8 @@ async function transcribe(audioData, id) {
   try {
     const result = await model(audioData, {
       sampling_rate: SAMPLE_RATE,
-      return_timestamps: false
+      return_timestamps: false,
+      ...options
     });
 
     const took = Math.round(performance.now() - start);
@@ -81,19 +82,19 @@ let busy = false;
 async function drainQueue() {
   if (busy || queue.length === 0) return;
   busy = true;
-  const { audioData, id } = queue.shift();
-  await transcribe(audioData, id);
+  const { audioData, id, options } = queue.shift();
+  await transcribe(audioData, id, options);
   busy = false;
   drainQueue();
 }
 
 self.onmessage = async (e) => {
-  const { type, audioData, id } = e.data;
+  const { type, audioData, id, options } = e.data;
 
   if (type === 'load') {
     await loadModel();
   } else if (type === 'transcribe') {
-    queue.push({ audioData, id });
+    queue.push({ audioData, id, options });
     drainQueue();
   }
 };
