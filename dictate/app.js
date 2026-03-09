@@ -516,6 +516,23 @@ document.getElementById('itemModalCopyBtn').addEventListener('click', () => {
   });
 });
 
+document.getElementById('itemModalDeleteBtn').addEventListener('click', () => {
+  if (currentEditItem) {
+    currentEditItem.remove();
+    if (!dictationsEl.querySelector('.dictation-item')) {
+      hasDictations = false;
+      dictationsEl.innerHTML = `
+        <div class="empty-state">
+          <i class="bi bi-mic d-block mb-2" style="font-size:3rem;"></i>
+          <p class="mb-0 small">Speak to start transcribing</p>
+        </div>
+      `;
+    }
+    saveTranscriptsToStorage();
+  }
+  itemModal.hide();
+});
+
 document.getElementById('itemModalCancelBtn').addEventListener('click', () => {
   itemModal.hide();
 });
@@ -524,6 +541,7 @@ document.getElementById('itemModalCancelBtn').addEventListener('click', () => {
 const settingsModalEl = document.getElementById('settingsModal');
 const settingsModal = new bootstrap.Modal(settingsModalEl);
 const saveToLocalStorageToggle = document.getElementById('saveToLocalStorageToggle');
+const modelQualitySelect = document.getElementById('modelQualitySelect');
 
 saveToLocalStorageToggle.checked = saveTranscriptsEnabled;
 
@@ -535,6 +553,11 @@ saveToLocalStorageToggle.addEventListener('change', () => {
   } else {
     localStorage.removeItem('savedTranscript');
   }
+});
+
+modelQualitySelect.value = localStorage.getItem('modelQuality') || 'low';
+modelQualitySelect.addEventListener('change', () => {
+  localStorage.setItem('modelQuality', modelQualitySelect.value);
 });
 
 document.getElementById('menuSettings').addEventListener('click', () => {
@@ -621,7 +644,6 @@ transcribeFileBtn.addEventListener('click', async () => {
   try {
     const text = await transcribeAudioFile(
       file,
-      worker,
       (msg) => { importAudioStatus.textContent = msg; },
       (completed, total) => { updateImportProgress(completed, total); },
     );
@@ -659,5 +681,7 @@ restoreTranscriptsFromStorage();
 
 // Preload model on init
 initWorker();
-worker.postMessage({ type: 'load' });
+// Main worker always uses whisper-tiny for live mic latency.
+// File import uses its own separate worker with the quality from Settings.
+worker.postMessage({ type: 'load', modelQuality: 'low' });
 log('App loaded');

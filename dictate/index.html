@@ -22,7 +22,7 @@
             <ul class="dropdown-menu" aria-labelledby="hamburgerBtn">
               <li>
                 <button class="dropdown-item" id="menuImportAudio">
-                  <i class="bi bi-music-note-beamed me-2"></i>Import Audio
+                  <i class="bi bi-soundwave me-2"></i>Import Audio
                 </button>
               </li>
               <li>
@@ -72,7 +72,7 @@
     </div>
 
     <!-- Transcription -->
-    <div class="card">
+    <div class="card transcript-card">
       <div class="card-header border-0 py-2">
         <div class="d-flex align-items-center justify-content-between">
           <h6 class="mb-0 small text-muted">
@@ -102,7 +102,7 @@
 
   <!-- Transcript Options Modal -->
   <div class="modal fade" id="titleModal" tabindex="-1" aria-labelledby="titleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
       <div class="modal-content">
         <div class="modal-header border-0 pb-1">
           <h5 class="modal-title" id="titleModalLabel">
@@ -136,7 +136,7 @@
 
   <!-- Transcript Item Edit Modal -->
   <div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
       <div class="modal-content">
         <div class="modal-header border-0 pb-1">
           <h5 class="modal-title" id="itemModalLabel">
@@ -148,6 +148,9 @@
           <textarea class="form-control" id="itemModalText" rows="6" style="resize:vertical;"></textarea>
         </div>
         <div class="modal-footer border-0 pt-1">
+          <button class="btn btn-outline-danger me-auto" id="itemModalDeleteBtn">
+            <i class="bi bi-trash me-1"></i>Delete
+          </button>
           <button class="btn btn-outline-secondary" id="itemModalCancelBtn">
             <i class="bi bi-x-lg me-1"></i>Cancel
           </button>
@@ -164,7 +167,7 @@
 
   <!-- Settings Modal -->
   <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
       <div class="modal-content">
         <div class="modal-header border-0 pb-1">
           <h5 class="modal-title" id="settingsModalLabel">
@@ -173,7 +176,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body pt-2">
-          <div class="settings-section">
+          <div class="settings-section mb-3">
             <div class="settings-section-title">Transcript Storage</div>
             <div class="form-check form-switch mb-2">
               <input class="form-check-input" type="checkbox" role="switch" id="saveToLocalStorageToggle">
@@ -182,6 +185,15 @@
               </label>
             </div>
             <p class="text-muted small mb-0">When enabled, transcripts are automatically saved to your browser's local storage and restored when you reopen the app.</p>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">Transcription Model</div>
+            <select class="form-select form-select-sm mb-2" id="modelQualitySelect">
+              <option value="low">Low — fastest</option>
+              <option value="medium">Medium — balanced</option>
+              <option value="high">High — most accurate</option>
+            </select>
+            <p class="text-muted small mb-0">Only affects file import — live dictation always uses the fastest model. Higher quality uses more memory and takes longer. Changes apply on the next import.</p>
           </div>
         </div>
         <div class="modal-footer border-0 pt-1">
@@ -193,11 +205,11 @@
 
   <!-- Import Audio Modal -->
   <div class="modal fade" id="importAudioModal" tabindex="-1" aria-labelledby="importAudioModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
       <div class="modal-content">
         <div class="modal-header border-0 pb-1">
           <h5 class="modal-title" id="importAudioModalLabel">
-            <i class="bi bi-music-note-beamed text-primary me-2"></i>Import Audio
+            <i class="bi bi-soundwave text-primary me-2"></i>Import Audio
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -229,7 +241,7 @@
 
   <!-- About Modal -->
   <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
       <div class="modal-content">
         <div class="modal-header border-0 pb-1">
           <h5 class="modal-title" id="aboutModalLabel">
@@ -241,15 +253,16 @@
           <p class="mb-2">Real-time speech transcription that runs entirely in your browser — no servers, no uploads, complete privacy.</p>
           <h6 class="mt-3 mb-2">How it works</h6>
           <ul class="small text-muted ps-3 mb-3">
-            <li class="mb-1">Uses OpenAI's Whisper model via <strong>Transformers.js</strong></li>
+            <li class="mb-1">Uses OpenAI's Whisper via <strong>Transformers.js</strong> — runs entirely in the browser, no server needed</li>
             <li class="mb-1">Runs on <strong>WebGPU</strong> for fast inference, falling back to WASM</li>
+            <li class="mb-1"><strong>Live dictation</strong> always uses whisper-tiny for minimum latency</li>
             <li class="mb-1">Voice activity detection automatically detects speech pauses</li>
             <li class="mb-1">Drag the red marker on the audio meter to set the silence threshold</li>
           </ul>
           <h6 class="mb-2">Features</h6>
           <ul class="small text-muted ps-3 mb-3">
-            <li class="mb-1">Click any transcript item to edit it</li>
-            <li class="mb-1">Import audio files (WAV, MP3, etc.) for offline transcription</li>
+            <li class="mb-1">Click any transcript item to edit or delete it</li>
+            <li class="mb-1">Import audio files (WAV, MP3, etc.) for transcription</li>
             <li class="mb-1">Save transcripts to local storage for persistence across sessions</li>
           </ul>
           <h6 class="mb-2">Keyboard shortcuts</h6>
@@ -261,6 +274,8 @@
               <kbd>R</kbd><span>Force transcribe current audio buffer</span>
             </div>
           </div>
+            <br>
+            <p class="small text muted mb-1"><strong>BONUS:</strong> Files can also be imported, select quality level in Settings (Low / Medium / High) uses whisper-tiny, whisper-base, or whisper-small</p>
         </div>
         <div class="modal-footer border-0 pt-1">
           <button class="btn btn-primary" data-bs-dismiss="modal">Close</button>

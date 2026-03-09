@@ -4,12 +4,17 @@ import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transfo
 env.backends.onnx.logSeverityLevel = 3;
 
 const SAMPLE_RATE = 16000;
-const MODEL_ID = 'onnx-community/whisper-tiny.en';
+const MODEL_IDS = {
+  low:    'onnx-community/whisper-tiny.en',
+  medium: 'onnx-community/whisper-base.en',
+  high:   'onnx-community/whisper-small.en',
+};
 
 let model = null;
 let device = 'wasm';
 
-async function loadModel() {
+async function loadModel(quality = 'low') {
+  const MODEL_ID = MODEL_IDS[quality] || MODEL_IDS.low;
   // Check WebGPU availability
   if (typeof navigator !== 'undefined' && navigator.gpu) {
     try {
@@ -62,7 +67,7 @@ async function transcribe(audioData, id, options = {}) {
     });
 
     const took = Math.round(performance.now() - start);
-    const text = result?.text?.trim() || '';
+    const text = (result?.text || '').trim().replace(/^["""'']+|["""'']+$/g, '').trim();
 
     self.postMessage({
       type: 'transcription',
@@ -89,10 +94,10 @@ async function drainQueue() {
 }
 
 self.onmessage = async (e) => {
-  const { type, audioData, id, options } = e.data;
+  const { type, audioData, id, options, modelQuality } = e.data;
 
   if (type === 'load') {
-    await loadModel();
+    await loadModel(modelQuality);
   } else if (type === 'transcribe') {
     queue.push({ audioData, id, options });
     drainQueue();
