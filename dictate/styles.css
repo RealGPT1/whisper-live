@@ -146,7 +146,7 @@ body { background: var(--bg-color); min-height: 100vh; color: var(--text-color);
   border: none;
   padding: 0;
   color: var(--text-color);
-  font-size: 1.4rem;
+  font-size: 1.7rem;
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -156,12 +156,19 @@ body { background: var(--bg-color); min-height: 100vh; color: var(--text-color);
 .hamburger-btn:hover { opacity: 0.65; }
 .hamburger-btn:focus-visible { outline: 2px solid currentColor; border-radius: 3px; }
 
-/* Status row: mic icon + status text, directly under title */
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+}
+
+/* Status row: mic icon + status text, directly under title.
+   Left-aligned with the title text (past hamburger icon + gap). */
 .app-status-row {
   display: flex;
   align-items: center;
   gap: 0.35rem;
   margin-top: 0.1rem;
+  padding-left: calc(1.7rem + 0.5rem); /* hamburger width + app-title gap */
 }
 .app-status-row #titleMicIcon {
   font-size: 0.8rem;

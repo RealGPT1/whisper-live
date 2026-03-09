@@ -78,7 +78,7 @@
           <h6 class="mb-0 small text-muted">
             <i class="bi bi-card-text me-1"></i>Transcription
           </h6>
-          <button class="copy-all-btn" id="copyAllBtn" title="Transcript options">
+          <button class="copy-all-btn" id="transcriptOptionsBtn" title="Transcript options">
             <i class="bi bi-clipboard" id="copyAllIcon"></i>
           </button>
         </div>
@@ -208,10 +208,17 @@
               accept=".wav,.mp3,.mp4,.m4a,.ogg,.webm,.flac,.aac">
             <div class="form-text">Supported: WAV, MP3, MP4, M4A, OGG, WebM, FLAC, AAC</div>
           </div>
+          <div id="importProgress" class="mb-2" style="display:none;">
+            <div class="progress" style="height:6px;">
+              <div class="progress-bar" id="importProgressBar" role="progressbar"
+                style="width:0%; transition: width 0.3s ease;"
+                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
           <div id="importAudioStatus" class="small text-muted" style="min-height:1.2em;"></div>
         </div>
         <div class="modal-footer border-0 pt-1">
-          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-outline-secondary" id="cancelImportBtn">Cancel</button>
           <button class="btn btn-primary" id="transcribeFileBtn" disabled>
             <i class="bi bi-lightning-fill me-1"></i>Transcribe
           </button>

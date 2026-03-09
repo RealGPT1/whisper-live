@@ -1,4 +1,4 @@
-import { transcribeAudioFile, handleWorkerMessage as handleFileWorkerMessage } from './audio-file-transcriber.js';
+import { transcribeAudioFile, cancelCurrentFileTranscription, handleWorkerMessage as handleFileWorkerMessage } from './audio-file-transcriber.js';
 
 // ----- CONFIG -----
 const SILENCE_MS = 800;
@@ -447,12 +447,12 @@ window.addEventListener('keydown', (e) => {
 });
 
 // ----- Transcript Options Modal (clipboard icon) -----
-const copyAllBtn = document.getElementById('copyAllBtn');
+const transcriptOptionsBtn = document.getElementById('transcriptOptionsBtn');
 const titleModalEl = document.getElementById('titleModal');
 const titleModal = new bootstrap.Modal(titleModalEl);
 const saveFilenameInput = document.getElementById('saveFilename');
 
-copyAllBtn.addEventListener('click', () => {
+transcriptOptionsBtn.addEventListener('click', () => {
   saveFilenameInput.value = generateDefaultFilename();
   titleModal.show();
 });
@@ -555,11 +555,32 @@ const importAudioModal = new bootstrap.Modal(importAudioModalEl);
 const audioFileInput = document.getElementById('audioFileInput');
 const transcribeFileBtn = document.getElementById('transcribeFileBtn');
 const importAudioStatus = document.getElementById('importAudioStatus');
+const cancelImportBtn = document.getElementById('cancelImportBtn');
+const importProgressWrap = document.getElementById('importProgress');
+const importProgressBar = document.getElementById('importProgressBar');
+
+let importInProgress = false;
+
+function updateImportProgress(completed, total) {
+  importProgressWrap.style.display = '';
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  importProgressBar.style.width = pct + '%';
+  importProgressBar.setAttribute('aria-valuenow', String(pct));
+}
+
+function resetImportModal() {
+  importProgressWrap.style.display = 'none';
+  importProgressBar.style.width = '0%';
+  importInProgress = false;
+  transcribeFileBtn.disabled = !audioFileInput.files.length;
+  cancelImportBtn.textContent = 'Cancel';
+}
 
 document.getElementById('menuImportAudio').addEventListener('click', () => {
   audioFileInput.value = '';
   transcribeFileBtn.disabled = true;
   importAudioStatus.textContent = '';
+  resetImportModal();
   importAudioModal.show();
 });
 
@@ -568,6 +589,20 @@ audioFileInput.addEventListener('change', () => {
   if (audioFileInput.files.length) {
     importAudioStatus.textContent = `Selected: ${audioFileInput.files[0].name}`;
   }
+});
+
+cancelImportBtn.addEventListener('click', () => {
+  if (importInProgress) {
+    cancelCurrentFileTranscription();
+    // Modal will close when the promise rejects/resolves
+  } else {
+    importAudioModal.hide();
+  }
+});
+
+// Prevent closing via the X button or backdrop while import is in progress
+importAudioModalEl.addEventListener('hide.bs.modal', (e) => {
+  if (importInProgress) e.preventDefault();
 });
 
 transcribeFileBtn.addEventListener('click', async () => {
@@ -579,31 +614,43 @@ transcribeFileBtn.addEventListener('click', async () => {
     return;
   }
 
+  importInProgress = true;
   transcribeFileBtn.disabled = true;
+  cancelImportBtn.textContent = 'Cancel Import';
 
   try {
-    const text = await transcribeAudioFile(file, worker, (msg) => {
-      importAudioStatus.textContent = msg;
-    });
+    const text = await transcribeAudioFile(
+      file,
+      worker,
+      (msg) => { importAudioStatus.textContent = msg; },
+      (completed, total) => { updateImportProgress(completed, total); },
+    );
 
     if (text) {
       const isNoise = /^\[.*\]$|^\(.*\)$|^\{.*\}$|^\*.*\*$/i.test(text);
       if (!isNoise) {
         addDictation(text);
         importAudioStatus.textContent = 'Transcription complete!';
+        importInProgress = false;
         setTimeout(() => importAudioModal.hide(), 900);
       } else {
         importAudioStatus.textContent = 'No speech detected in file.';
-        transcribeFileBtn.disabled = false;
+        resetImportModal();
       }
     } else {
       importAudioStatus.textContent = 'No speech detected in file.';
-      transcribeFileBtn.disabled = false;
+      resetImportModal();
     }
   } catch (err) {
+    if (err.name === 'AbortError') {
+      log('file import cancelled');
+      resetImportModal();
+      importAudioModal.hide();
+      return;
+    }
     log('file transcription error:', err);
     importAudioStatus.textContent = `Error: ${err.message}`;
-    transcribeFileBtn.disabled = false;
+    resetImportModal();
   }
 });
 
