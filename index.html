@@ -197,9 +197,20 @@
     footer a:hover { color: #aaa; }
 
     @media (max-width: 576px) {
-      .hero h1 { font-size: 2rem; }
       .hero { padding: 4rem 1rem 2rem; }
+      .hero h1 { font-size: 2rem; }
+      .hero p { font-size: 0.95rem; margin-bottom: 2rem; }
+      .badges { margin-bottom: 2.5rem; }
       .github-link span { display: none; }
+      .app-cards { grid-template-columns: 1fr; padding: 0 1rem 2.5rem; gap: 0.875rem; }
+      .app-card { padding: 1.25rem; }
+      .how-it-works { padding: 2.5rem 1rem; }
+      .features { grid-template-columns: repeat(2, 1fr); gap: 1.5rem 1.25rem; max-width: none; }
+      .feature i { font-size: 1.1rem; }
+    }
+    @media (max-width: 340px) {
+      .hero h1 { font-size: 1.65rem; }
+      .features { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -218,7 +229,7 @@
       <span class="badge-pill"><i class="bi bi-cpu"></i> WebGPU / WASM</span>
       <span class="badge-pill"><i class="bi bi-lock-fill"></i> Runs locally</span>
       <span class="badge-pill"><i class="bi bi-lightning-fill"></i> Whisper tiny.en</span>
-      <span class="badge-pill"><i class="bi bi-palette"></i> Dark only</span>
+      <span class="badge-pill"><i class="bi bi-palette"></i> Themes</span>
     </div>
   </div>
 
@@ -230,7 +241,7 @@
       </div>
       <div>
         <h2>Dictate</h2>
-        <p>Pure speech-to-text. Each utterance becomes a card with a one-click copy button.</p>
+        <p>Each utterance is transcribed pseudo real time and can be edited and saved. Also supports file transcription.</p>
       </div>
       <div class="app-card-footer">
         Open Dictate <i class="bi bi-arrow-right"></i>
