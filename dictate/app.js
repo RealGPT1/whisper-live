@@ -326,6 +326,7 @@ function flattenFloat32Array(chunks) {
 
 // ----- Settings: save transcripts to local storage -----
 let saveTranscriptsEnabled = localStorage.getItem('saveTranscripts') === '1';
+let separateUtterances = localStorage.getItem('separateUtterances') !== '0'; // default true
 
 function saveTranscriptsToStorage() {
   if (!saveTranscriptsEnabled) return;
@@ -372,9 +373,10 @@ function addDictation(txt, doSave = true) {
 }
 
 function getAllTranscriptText() {
+  const sep = separateUtterances ? '\n\n' : '\n';
   return [...dictationsEl.querySelectorAll('.dictation-item')]
     .map(el => el.dataset.text || el.querySelector('.dictation-text').textContent.trim())
-    .join('\n');
+    .join(sep);
 }
 
 function clearTranscript() {
@@ -541,9 +543,11 @@ document.getElementById('itemModalCancelBtn').addEventListener('click', () => {
 const settingsModalEl = document.getElementById('settingsModal');
 const settingsModal = new bootstrap.Modal(settingsModalEl);
 const saveToLocalStorageToggle = document.getElementById('saveToLocalStorageToggle');
+const separateUtterancesToggle = document.getElementById('separateUtterancesToggle');
 const modelQualitySelect = document.getElementById('modelQualitySelect');
 
 saveToLocalStorageToggle.checked = saveTranscriptsEnabled;
+separateUtterancesToggle.checked = separateUtterances;
 
 saveToLocalStorageToggle.addEventListener('change', () => {
   saveTranscriptsEnabled = saveToLocalStorageToggle.checked;
@@ -553,6 +557,11 @@ saveToLocalStorageToggle.addEventListener('change', () => {
   } else {
     localStorage.removeItem('savedTranscript');
   }
+});
+
+separateUtterancesToggle.addEventListener('change', () => {
+  separateUtterances = separateUtterancesToggle.checked;
+  localStorage.setItem('separateUtterances', separateUtterances ? '1' : '0');
 });
 
 modelQualitySelect.value = localStorage.getItem('modelQuality') || 'low';
