@@ -1,0 +1,57 @@
+{
+  "id": "/",
+  "name": "Whisper Live",
+  "short_name": "Whisper Live",
+  "description": "Real-time speech transcription in the browser. No server, no API key, fully private. Powered by OpenAI Whisper via Transformers.js.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "theme_color": "#000000",
+  "background_color": "#0d0d0d",
+  "categories": ["productivity", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dictate",
+      "short_name": "Dictate",
+      "description": "Real-time speech dictation with Whisper",
+      "url": "/dictate/",
+      "icons": [
+        { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+      ]
+    },
+    {
+      "name": "Intent",
+      "short_name": "Intent",
+      "description": "Voice intent classification",
+      "url": "/intent/",
+      "icons": [
+        { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "label": "Whisper Live home screen",
+      "form_factor": "narrow"
+    }
+  ],
+  "prefer_related_applications": false
+}
