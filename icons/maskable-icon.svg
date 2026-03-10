@@ -1,0 +1,37 @@
+<!-- Maskable icon: safe zone is inner 80% (102px padding each side on 512px canvas) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+  </defs>
+
+  <!-- Solid background (maskable icons must fill the entire canvas) -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <!-- Subtle glow -->
+  <circle cx="256" cy="240" r="110" fill="#4d9fff" opacity="0.10" filter="url(#blur)"/>
+
+  <!-- Mic capsule — scaled to fit within safe zone -->
+  <rect x="213" y="118" width="86" height="148" rx="43" fill="#4d9fff"/>
+
+  <!-- Inner mic highlight -->
+  <rect x="226" y="130" width="38" height="72" rx="19" fill="#7ab8ff" opacity="0.4"/>
+
+  <!-- Stand arc -->
+  <path d="M173 274 Q173 354 256 354 Q339 354 339 274"
+        fill="none" stroke="#4d9fff" stroke-width="22"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Stand post -->
+  <line x1="256" y1="354" x2="256" y2="396"
+        stroke="#4d9fff" stroke-width="22" stroke-linecap="round"/>
+
+  <!-- Base -->
+  <line x1="210" y1="396" x2="302" y2="396"
+        stroke="#4d9fff" stroke-width="22" stroke-linecap="round"/>
+</svg>

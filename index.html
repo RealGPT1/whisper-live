@@ -4,6 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Whisper Live</title>
+
+  <!-- PWA manifest & theme -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Whisper Live" />
+  <link rel="apple-touch-icon" href="/icons/icon.svg" />
+  <meta name="description" content="Real-time speech transcription in the browser. No server, no API key, fully private." />
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
   <style>
@@ -212,6 +223,83 @@
       .hero h1 { font-size: 1.65rem; }
       .features { grid-template-columns: 1fr; }
     }
+
+    /* PWA install prompt banner */
+    #pwa-install-banner {
+      display: none;
+      position: fixed;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      max-width: calc(100vw - 2rem);
+      animation: slideUp 0.3s ease;
+    }
+    #pwa-install-banner.hidden { display: none !important; }
+    #pwa-install-banner .banner-icon { font-size: 1.4rem; color: #4d9fff; flex-shrink: 0; }
+    #pwa-install-banner .banner-text { flex: 1; }
+    #pwa-install-banner .banner-text strong { font-size: 0.85rem; color: #e9ecef; display: block; }
+    #pwa-install-banner .banner-text span  { font-size: 0.78rem; color: #6c757d; }
+    #pwa-install-banner .banner-install {
+      padding: 0.4rem 0.9rem;
+      background: #4d9fff;
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    #pwa-install-banner .banner-install:hover { background: #3a8ee6; }
+    #pwa-install-banner .banner-dismiss {
+      background: none;
+      border: none;
+      color: #555;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0.2rem;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    #pwa-install-banner .banner-dismiss:hover { color: #aaa; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @media (max-width: 480px) {
+      #pwa-install-banner { bottom: 0.75rem; border-radius: 12px; }
+    }
+
+    /* SW update toast */
+    #pwa-update-toast {
+      display: none;
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 201;
+      background: #0d6efd;
+      color: #fff;
+      border-radius: 12px;
+      padding: 0.65rem 1rem;
+      font-size: 0.82rem;
+      box-shadow: 0 4px 20px rgba(13,110,253,0.4);
+      align-items: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #pwa-update-toast.visible { display: flex; }
   </style>
 </head>
 <body>
@@ -293,6 +381,97 @@
     Powered by <a href="https://github.com/xenova/transformers.js" target="_blank" rel="noopener">Transformers.js</a>
     &amp; <a href="https://github.com/openai/whisper" target="_blank" rel="noopener">Whisper</a>
   </footer>
+
+  <!-- PWA install prompt banner -->
+  <div id="pwa-install-banner" class="hidden" role="complementary" aria-label="Install app prompt">
+    <i class="bi bi-phone banner-icon" aria-hidden="true"></i>
+    <div class="banner-text">
+      <strong>Install Whisper Live</strong>
+      <span>Works offline · Models cached</span>
+    </div>
+    <button class="banner-install" id="pwa-install-btn" aria-label="Install app">Install</button>
+    <button class="banner-dismiss" id="pwa-dismiss-btn" aria-label="Dismiss install prompt">✕</button>
+  </div>
+
+  <!-- SW update notification -->
+  <div id="pwa-update-toast" role="status" aria-live="polite">
+    <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+    Update available — tap to reload
+  </div>
+
+  <script>
+    // ── Service Worker registration ──────────────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+
+          // Detect when a new SW is waiting and show update toast
+          const showUpdateToast = (sw) => {
+            const toast = document.getElementById('pwa-update-toast');
+            toast.classList.add('visible');
+            toast.addEventListener('click', () => {
+              sw.postMessage({ type: 'SKIP_WAITING' });
+            }, { once: true });
+          };
+
+          if (reg.waiting) showUpdateToast(reg.waiting);
+
+          reg.addEventListener('updatefound', () => {
+            const newSW = reg.installing;
+            newSW?.addEventListener('statechange', () => {
+              if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                showUpdateToast(newSW);
+              }
+            });
+          });
+
+          // Reload when new SW takes control
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) { refreshing = true; location.reload(); }
+          });
+        } catch (err) {
+          console.warn('SW registration failed:', err);
+        }
+      });
+    }
+
+    // ── PWA install prompt ───────────────────────────────────────────────────
+    let deferredInstallPrompt = null;
+    const installBanner  = document.getElementById('pwa-install-banner');
+    const installBtn     = document.getElementById('pwa-install-btn');
+    const dismissBtn     = document.getElementById('pwa-dismiss-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();  // stop the browser's default mini-infobar
+      deferredInstallPrompt = e;
+      // Only show banner if user hasn't dismissed it before
+      if (!localStorage.getItem('pwa-install-dismissed')) {
+        installBanner.classList.remove('hidden');
+      }
+    });
+
+    installBtn?.addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      installBanner.classList.add('hidden');
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') localStorage.setItem('pwa-install-dismissed', '1');
+      deferredInstallPrompt = null;
+    });
+
+    dismissBtn?.addEventListener('click', () => {
+      installBanner.classList.add('hidden');
+      localStorage.setItem('pwa-install-dismissed', '1');
+    });
+
+    // Hide banner when app is already installed
+    window.addEventListener('appinstalled', () => {
+      installBanner.classList.add('hidden');
+      deferredInstallPrompt = null;
+    });
+  </script>
 
 </body>
 </html>

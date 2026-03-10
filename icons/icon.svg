@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d6efd" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#6610f2" stop-opacity="0.25"/>
+    </linearGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="114" fill="url(#bg)"/>
+
+  <!-- Glow blob -->
+  <circle cx="256" cy="230" r="140" fill="#4d9fff" opacity="0.12" filter="url(#blur)"/>
+
+  <!-- Mic capsule -->
+  <rect x="196" y="96" width="120" height="204" rx="60" fill="#4d9fff"/>
+
+  <!-- Inner mic highlight -->
+  <rect x="214" y="110" width="52" height="100" rx="26" fill="#7ab8ff" opacity="0.4"/>
+
+  <!-- Stand arc -->
+  <path d="M148 252 Q148 372 256 372 Q364 372 364 252"
+        fill="none" stroke="#4d9fff" stroke-width="26"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Stand post -->
+  <line x1="256" y1="372" x2="256" y2="430"
+        stroke="#4d9fff" stroke-width="26" stroke-linecap="round"/>
+
+  <!-- Base -->
+  <line x1="190" y1="430" x2="322" y2="430"
+        stroke="#4d9fff" stroke-width="26" stroke-linecap="round"/>
+</svg>
