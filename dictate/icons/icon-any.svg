@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#0d6efd"/>
+    </linearGradient>
+  </defs>
+  <!-- Circular background -->
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+  <!-- Microphone capsule -->
+  <rect x="200" y="108" width="112" height="184" rx="56" fill="white"/>
+  <!-- Stand arc -->
+  <path d="M156 264 Q156 364 256 364 Q356 364 356 264"
+        fill="none" stroke="white" stroke-width="26" stroke-linecap="round"/>
+  <!-- Pole -->
+  <line x1="256" y1="364" x2="256" y2="416" stroke="white" stroke-width="26" stroke-linecap="round"/>
+  <!-- Base -->
+  <line x1="192" y1="416" x2="320" y2="416" stroke="white" stroke-width="26" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,37 @@
+{
+  "id": "/dictate/",
+  "name": "Whisper Live Dictate",
+  "short_name": "Dictate",
+  "description": "Real-time speech transcription running entirely in your browser — no servers, no uploads, complete privacy.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#0d6efd",
+  "orientation": "any",
+  "lang": "en-US",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "icons/icon-any.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Dictating",
+      "short_name": "Dictate",
+      "description": "Open the app ready to transcribe",
+      "url": "./"
+    }
+  ],
+  "prefer_related_applications": false
+}

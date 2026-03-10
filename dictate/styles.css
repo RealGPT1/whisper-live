@@ -368,3 +368,20 @@ body { background: var(--bg-color); min-height: 100vh; color: var(--text-color);
 [data-theme="dark"] .modal-footer {
   border-color: rgba(255,255,255,0.1);
 }
+
+/* ── PWA: form-select dark mode ─────────────────────────────────────────── */
+[data-theme="dark"] .form-select {
+  background-color: #0f3460;
+  border-color: rgba(255,255,255,0.15);
+  color: var(--text-color);
+}
+
+/* ── PWA: install menu item highlight ───────────────────────────────────── */
+#menuInstall {
+  font-weight: 500;
+}
+
+/* ── PWA: modal-action-btn ──────────────────────────────────────────────── */
+.modal-action-btn {
+  text-align: left;
+}

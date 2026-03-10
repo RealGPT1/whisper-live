@@ -4,6 +4,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Whisper Live Dictate</title>
+
+  <!-- PWA manifest + theme -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0d6efd" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- iOS home-screen meta -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Dictate" />
+  <link rel="apple-touch-icon" href="icons/icon-any.svg" />
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
   <link href="styles.css" rel="stylesheet">
@@ -33,6 +45,12 @@
               <li>
                 <button class="dropdown-item" id="menuAbout">
                   <i class="bi bi-info-circle me-2"></i>About
+                </button>
+              </li>
+              <li id="menuInstallItem" style="display:none;">
+                <hr class="dropdown-divider">
+                <button class="dropdown-item text-primary" id="menuInstall">
+                  <i class="bi bi-download me-2"></i>Install App
                 </button>
               </li>
             </ul>
@@ -212,6 +230,13 @@
             </select>
             <p class="text-muted small mb-0">Only affects file import — live dictation always uses the fastest model. Higher quality uses more memory and takes longer. Changes apply on the next import.</p>
           </div>
+          <div class="settings-section mt-3" id="cacheSection">
+            <div class="settings-section-title">Offline Cache</div>
+            <p class="text-muted small mb-2" id="cacheStatsText">—</p>
+            <button class="btn btn-sm btn-outline-danger" id="clearModelCacheBtn">
+              <i class="bi bi-trash me-1"></i>Clear model cache
+            </button>
+          </div>
         </div>
         <div class="modal-footer border-0 pt-1">
           <button class="btn btn-primary" data-bs-dismiss="modal">Done</button>
@@ -303,5 +328,91 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="app.js"></script>
+
+  <!-- PWA: service worker registration + install prompt -->
+  <script type="module">
+    // ── Service worker ────────────────────────────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then((reg) => {
+          console.log('[PWA] service worker registered, scope:', reg.scope);
+        })
+        .catch((err) => console.warn('[PWA] SW registration failed:', err));
+    }
+
+    // ── Install prompt ────────────────────────────────────────────────────────
+    let deferredPrompt = null;
+    const menuInstallItem = document.getElementById('menuInstallItem');
+    const menuInstall     = document.getElementById('menuInstall');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      menuInstallItem.style.display = '';   // show "Install App" menu item
+    });
+
+    menuInstall?.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('[PWA] install prompt outcome:', outcome);
+      deferredPrompt = null;
+      menuInstallItem.style.display = 'none';
+    });
+
+    // Hide "Install App" once the app is actually installed.
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      menuInstallItem.style.display = 'none';
+    });
+
+    // ── Cache stats in Settings ───────────────────────────────────────────────
+    const cacheStatsText    = document.getElementById('cacheStatsText');
+    const clearModelCacheBtn = document.getElementById('clearModelCacheBtn');
+    const settingsModalEl   = document.getElementById('settingsModal');
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return `${(bytes / 1024 ** i).toFixed(1)} ${units[i]}`;
+    }
+
+    function refreshCacheStats() {
+      if (!navigator.serviceWorker?.controller) {
+        cacheStatsText.textContent = 'Service worker not yet active.';
+        return;
+      }
+      const channel = new MessageChannel();
+      channel.port1.onmessage = (e) => {
+        if (e.data?.type === 'CACHE_STATS') {
+          const { modelCache, appCache } = e.data;
+          cacheStatsText.textContent =
+            `Models: ${formatBytes(modelCache.bytes)} (${modelCache.count} files) — ` +
+            `App shell: ${formatBytes(appCache.bytes)} (${appCache.count} files)`;
+        }
+      };
+      navigator.serviceWorker.controller.postMessage(
+        { type: 'GET_CACHE_STATS' },
+        [channel.port2]
+      );
+    }
+
+    settingsModalEl?.addEventListener('show.bs.modal', refreshCacheStats);
+
+    clearModelCacheBtn?.addEventListener('click', () => {
+      if (!navigator.serviceWorker?.controller) return;
+      const channel = new MessageChannel();
+      channel.port1.onmessage = (e) => {
+        if (e.data?.type === 'MODEL_CACHE_CLEARED') {
+          cacheStatsText.textContent = 'Model cache cleared. Models will re-download on next use.';
+        }
+      };
+      navigator.serviceWorker.controller.postMessage(
+        { type: 'CLEAR_MODEL_CACHE' },
+        [channel.port2]
+      );
+    });
+  </script>
 </body>
 </html>
