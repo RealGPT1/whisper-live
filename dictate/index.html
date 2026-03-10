@@ -117,13 +117,20 @@
               <i class="bi bi-clipboard me-2"></i>Copy transcript to clipboard
             </button>
             <div class="save-file-group">
-              <div class="input-group input-group-sm mb-1">
+              <label class="form-label small text-muted mb-1">Save as text file</label>
+              <div class="input-group input-group-sm">
                 <span class="input-group-text"><i class="bi bi-file-text"></i></span>
                 <input type="text" class="form-control" id="saveFilename" placeholder="filename.txt">
+                <button class="btn btn-outline-secondary" id="modalSaveBtn">Save</button>
               </div>
-              <button class="btn btn-outline-secondary modal-action-btn w-100" id="modalSaveBtn">
-                <i class="bi bi-download me-2"></i>Save as text file
-              </button>
+            </div>
+            <div class="save-file-group">
+              <label class="form-label small text-muted mb-1">Save as JSON</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-filetype-json"></i></span>
+                <input type="text" class="form-control" id="saveJsonFilename" placeholder="filename.json">
+                <button class="btn btn-outline-secondary" id="modalSaveJsonBtn">Save</button>
+              </div>
             </div>
             <button class="btn btn-outline-danger modal-action-btn" id="modalNewBtn">
               <i class="bi bi-arrow-counterclockwise me-2"></i>Start new transcript
@@ -145,7 +152,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body pt-2">
-          <textarea class="form-control" id="itemModalText" rows="6" style="resize:vertical;"></textarea>
+          <textarea class="form-control" id="itemModalText"></textarea>
         </div>
         <div class="modal-footer border-0 pt-1">
           <button class="btn btn-outline-danger me-auto" id="itemModalDeleteBtn">

@@ -203,6 +203,21 @@ body { background: var(--bg-color); min-height: 100vh; color: var(--text-color);
   gap: 0.25rem;
 }
 
+/* Edit transcript modal — textarea fills available space */
+#itemModal .modal-content {
+  min-height: min(55vh, 520px);
+}
+#itemModal .modal-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+#itemModalText {
+  flex: 1 1 auto;
+  resize: none;
+  min-height: 120px;
+}
+
 /* Mobile adjustments */
 @media (max-width: 576px) {
   body { padding: 0; }

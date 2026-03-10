@@ -330,9 +330,9 @@ let separateUtterances = localStorage.getItem('separateUtterances') !== '0'; // 
 
 function saveTranscriptsToStorage() {
   if (!saveTranscriptsEnabled) return;
-  const texts = [...dictationsEl.querySelectorAll('.dictation-item')]
-    .map(el => el.dataset.text || el.querySelector('.dictation-text').textContent.trim());
-  localStorage.setItem('savedTranscript', JSON.stringify(texts));
+  const items = [...dictationsEl.querySelectorAll('.dictation-item')]
+    .map(el => ({ time: el.dataset.time || '', text: el.dataset.text || el.querySelector('.dictation-text').textContent.trim() }));
+  localStorage.setItem('savedTranscript', JSON.stringify(items));
 }
 
 function restoreTranscriptsFromStorage() {
@@ -340,9 +340,15 @@ function restoreTranscriptsFromStorage() {
   const saved = localStorage.getItem('savedTranscript');
   if (!saved) return;
   try {
-    const texts = JSON.parse(saved);
-    if (texts.length > 0) {
-      texts.forEach(t => addDictation(t, false));
+    const items = JSON.parse(saved);
+    if (items.length > 0) {
+      items.forEach(item => {
+        if (typeof item === 'string') {
+          addDictation(item, false);
+        } else {
+          addDictation(item.text, false, item.time || null);
+        }
+      });
     }
   } catch (e) {
     log('failed to restore transcripts:', e);
@@ -350,15 +356,22 @@ function restoreTranscriptsFromStorage() {
 }
 // -------------------------------------------------------
 
-function addDictation(txt, doSave = true) {
+function addDictation(txt, doSave = true, timeStr = null) {
   if (!hasDictations) {
     dictationsEl.innerHTML = '';
     hasDictations = true;
   }
 
+  if (timeStr === null) {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
+
   const el = document.createElement('div');
   el.className = 'dictation-item';
   el.dataset.text = txt;
+  el.dataset.time = timeStr;
   el.title = 'Click to edit';
 
   el.innerHTML = `<div class="dictation-text">${txt}</div>`;
@@ -379,6 +392,14 @@ function getAllTranscriptText() {
     .join(sep);
 }
 
+function getAllTranscriptJson() {
+  return [...dictationsEl.querySelectorAll('.dictation-item')]
+    .map(el => ({
+      time: el.dataset.time || '00:00:00',
+      text: el.dataset.text || el.querySelector('.dictation-text').textContent.trim()
+    }));
+}
+
 function clearTranscript() {
   hasDictations = false;
   userScrolledAway = false;
@@ -395,6 +416,12 @@ function generateDefaultFilename() {
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.txt`;
+}
+
+function generateDefaultJsonFilename() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.json`;
 }
 
 async function stopCapture() {
@@ -453,9 +480,11 @@ const transcriptOptionsBtn = document.getElementById('transcriptOptionsBtn');
 const titleModalEl = document.getElementById('titleModal');
 const titleModal = new bootstrap.Modal(titleModalEl);
 const saveFilenameInput = document.getElementById('saveFilename');
+const saveJsonFilenameInput = document.getElementById('saveJsonFilename');
 
 transcriptOptionsBtn.addEventListener('click', () => {
   saveFilenameInput.value = generateDefaultFilename();
+  saveJsonFilenameInput.value = generateDefaultJsonFilename();
   titleModal.show();
 });
 
@@ -472,6 +501,22 @@ document.getElementById('modalSaveBtn').addEventListener('click', () => {
   if (!text) { titleModal.hide(); return; }
   const filename = saveFilenameInput.value.trim() || generateDefaultFilename();
   const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  titleModal.hide();
+});
+
+document.getElementById('modalSaveJsonBtn').addEventListener('click', () => {
+  const items = getAllTranscriptJson();
+  if (!items.length) { titleModal.hide(); return; }
+  const filename = saveJsonFilenameInput.value.trim() || generateDefaultJsonFilename();
+  const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
